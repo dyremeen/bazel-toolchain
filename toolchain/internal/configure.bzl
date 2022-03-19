@@ -304,11 +304,11 @@ cc_toolchain_config(
 toolchain(
     name = "cc-toolchain-{suffix}",
     exec_compatible_with = [
-        "@platforms//cpu:{host_arch}",
+        "@platforms//cpu:{host_cpu_bzl}",
         "@platforms//os:{host_os_bzl}",
     ],
     target_compatible_with = [
-        "@platforms//cpu:{target_arch}",
+        "@platforms//cpu:{target_cpu_bzl}",
         "@platforms//os:{target_os_bzl}",
     ],
     toolchain = ":cc-clang-{suffix}",
@@ -392,6 +392,11 @@ cc_toolchain(
         # Get a value from the dict for the target pair, falling back to an empty key, if present.
         return d.get(target_pair, d.get("", default))
 
+    def cpu_bzl_from_os_arch(os,arch):
+        if os == "darwin" and arch=="arm64":
+            return "aarch64"
+        return arch
+
     return template.format(
         suffix = suffix,
         target_os = target_os,
@@ -400,6 +405,8 @@ cc_toolchain(
         host_arch = host_arch,
         target_os_bzl = target_os_bzl,
         host_os_bzl = host_os_bzl,
+        host_cpu_bzl = cpu_bzl_from_os_arch(host_os, host_arch),
+        target_cpu_bzl = cpu_bzl_from_os_arch(target_os, target_arch),
         llvm_repo_label_prefix = toolchain_info.llvm_repo_label_prefix,
         toolchain_path_prefix = toolchain_info.toolchain_path_prefix,
         tools_path_prefix = toolchain_info.tools_path_prefix,
